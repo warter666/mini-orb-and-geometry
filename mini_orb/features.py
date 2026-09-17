@@ -61,14 +61,19 @@ def harris_scores(img):
     return resp
 
 
-def detect_keypoints(img, n=300, threshold=15, nms_radius=5):
-    """FAST candidates -> Harris-ranked, NMS-suppressed keypoint list [(y, x)]."""
+def detect_keypoints(img, n=300, threshold=15, nms_radius=5, max_candidates=2000):
+    """FAST candidates -> Harris-ranked, NMS-suppressed keypoint list [(y, x)].
+
+    Low FAST thresholds can yield tens of thousands of candidates; since only the
+    top-n survivors matter, cap the NMS input at the highest-scoring
+    `max_candidates` before the quadratic suppression loop.
+    """
     H, W = img.shape
     mask = fast9_mask(img, threshold)
     resp = harris_scores(img)
     ys, xs = np.nonzero(mask)
     scores = resp[ys, xs]
-    order = np.argsort(-scores)
+    order = np.argsort(-scores)[:max_candidates]
     picked = []
     r2 = nms_radius * nms_radius
     for idx in order:
