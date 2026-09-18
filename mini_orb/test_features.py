@@ -3,7 +3,8 @@
 import numpy as np
 from scipy import ndimage
 
-from mini_orb.features import detect_and_describe, detect_keypoints, match
+from mini_orb.features import (_smooth, detect_and_describe, detect_keypoints,
+                               match)
 
 
 def make_scene(size=400, seed=0):
@@ -57,6 +58,20 @@ def test_transformed_image_matches():
     assert ratio > 0.5, f"transform inlier ratio too low: {ratio:.2f}"
 
 
+def test_smooth_center_convention():
+    # pin the index<->image-coordinate convention of the 5x5 box filter:
+    # s[i] must center on image coordinate i + 2. Corner pixels are the only
+    # unambiguous probe -- an off-by-one convention puts them in a different
+    # window (this is the regression for the (-1, -1) BRIEF grid shift).
+    img = np.zeros((40, 40))
+    img[0, 0] = 255.0
+    img[39, 39] = 255.0
+    sm = _smooth(img)
+    assert np.isclose(sm[0, 0], 255 / 25), sm[0, 0]    # window 0..4 sees (0,0)
+    assert np.isclose(sm[35, 35], 255 / 25), sm[35, 35]  # window 35..39 sees (39,39)
+    assert sm[2, 2] == 0.0                              # window 2..6 sees neither
+
+
 def test_unrelated_images_match_poorly():
     a, _ = make_scene(seed=0)
     b = np.zeros((400, 400))
@@ -73,6 +88,8 @@ if __name__ == "__main__":
     print("FAST corner location test passed")
     test_transformed_image_matches()
     print("rotation+translation matching test passed")
+    test_smooth_center_convention()
+    print("smoothing center convention test passed")
     test_unrelated_images_match_poorly()
     print("unrelated-image rejection test passed")
     print("all mini-ORB tests passed")

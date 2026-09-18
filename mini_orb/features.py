@@ -130,7 +130,7 @@ _P1, _P2 = _make_pattern()
 def _smooth(img):
     ii = _integral(img.astype(np.float64))
     s = _box_sum(ii, 2) / 25.0
-    return s  # valid-region smoothed image; index 0 == image coord (3, 3)
+    return s  # valid-region smoothed image; s[i] centers on image coord (i + 2)
 
 
 def describe(img, keypoints, angles):
@@ -143,8 +143,8 @@ def describe(img, keypoints, angles):
                         _P1[:, 0] * s + _P1[:, 1] * c], axis=1)
         rot2 = np.stack([_P2[:, 0] * c - _P2[:, 1] * s,
                          _P2[:, 0] * s + _P2[:, 1] * c], axis=1)
-        p1 = np.rint(rot).astype(int) + (y - 3, x - 3)  # smooth-image offset
-        p2 = np.rint(rot2).astype(int) + (y - 3, x - 3)
+        p1 = np.rint(rot).astype(int) + (y - 2, x - 2)  # smooth idx = img - 2
+        p2 = np.rint(rot2).astype(int) + (y - 2, x - 2)
         bits = sm[p1[:, 0], p1[:, 1]] < sm[p2[:, 0], p2[:, 1]]
         descs[k] = np.packbits(bits)
     return descs
