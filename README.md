@@ -1,5 +1,7 @@
 # 03-vision — 纯 numpy 的 ORB 特征 + 几何视觉
 
+[![CI](https://github.com/warter666/mini-orb-and-geometry/actions/workflows/ci.yml/badge.svg)](https://github.com/warter666/mini-orb-and-geometry/actions/workflows/ci.yml)
+
 参照 ORB_SLAM2 与《视觉 SLAM 十四讲》，不调用任何计算机视觉库的函数，全部 numpy 实现。
 两个包：特征管线 `mini_orb` + 几何视觉 `mini_geom`。
 
